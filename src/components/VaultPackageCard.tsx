@@ -147,12 +147,13 @@ export function VaultPackageCard({
 
   useEffect(() => {
     if (!moveMenuOpen) return;
-    function onDocMouseDown(e: globalThis.MouseEvent) {
-      const el = menuRef.current;
-      if (el && !el.contains(e.target as Node)) onCloseMoveMenu();
-    }
-    document.addEventListener('mousedown', onDocMouseDown);
-    return () => document.removeEventListener('mousedown', onDocMouseDown);
+    const handler = (e: globalThis.MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        onCloseMoveMenu();
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
   }, [moveMenuOpen, onCloseMoveMenu]);
 
   async function handleCopy(e: ReactMouseEvent<HTMLButtonElement>) {
