@@ -1,11 +1,11 @@
-import { useEffect, useRef, type MouseEvent } from 'react';
+import { useEffect, useRef, type MouseEvent as ReactMouseEvent } from 'react';
 import { Copy, FolderInput, GripVertical, Star } from 'lucide-react';
 import { toast } from 'sonner';
 import { TaskTypeChip } from './TaskTypeChip';
 import { Button } from './ui/button';
 import type { VaultFolderRow } from '../hooks/useVaultFolders';
 import type { VaultPackageRow } from '../hooks/useVaultPackages';
-import { PLATFORMS, TASK_TYPES, type TaskType } from '../lib/contract';
+import { PLATFORMS, type TaskType } from '../lib/contract';
 import { cn } from '../lib/utils';
 
 function isTaskType(s: string): s is TaskType {
@@ -109,7 +109,7 @@ interface VaultPackageCardProps {
   view: ViewMode;
   folders: VaultFolderRow[];
   moveMenuOpen: boolean;
-  onToggleMoveMenu: (e: MouseEvent) => void;
+  onToggleMoveMenu: (e: ReactMouseEvent<HTMLButtonElement>) => void;
   onCloseMoveMenu: () => void;
   onOpenForge: () => void;
   onToggleFavorite: () => void;
@@ -147,7 +147,7 @@ export function VaultPackageCard({
 
   useEffect(() => {
     if (!moveMenuOpen) return;
-    function onDocMouseDown(e: MouseEvent) {
+    function onDocMouseDown(e: globalThis.MouseEvent) {
       const el = menuRef.current;
       if (el && !el.contains(e.target as Node)) onCloseMoveMenu();
     }
@@ -155,7 +155,7 @@ export function VaultPackageCard({
     return () => document.removeEventListener('mousedown', onDocMouseDown);
   }, [moveMenuOpen, onCloseMoveMenu]);
 
-  async function handleCopy(e: MouseEvent) {
+  async function handleCopy(e: ReactMouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
     try {
       await navigator.clipboard.writeText(rowToEnvelopeJson(row));
@@ -165,7 +165,7 @@ export function VaultPackageCard({
     }
   }
 
-  function handleFav(e: MouseEvent) {
+  function handleFav(e: ReactMouseEvent<HTMLButtonElement>) {
     e.stopPropagation();
     onToggleFavorite();
   }

@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type MouseEvent as ReactMouseEvent,
+} from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useQueryClient } from '@tanstack/react-query';
 import { LayoutGrid, List, Package, Plus, Search, FolderPlus } from 'lucide-react';
@@ -146,7 +153,7 @@ export function Vault() {
     }
   }
 
-  function toggleMoveMenu(e: MouseEvent, id: string) {
+  function toggleMoveMenu(e: ReactMouseEvent<HTMLButtonElement>, id: string) {
     e.stopPropagation();
     setMoveMenuPackageId((p) => (p === id ? null : id));
   }
