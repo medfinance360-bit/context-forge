@@ -110,9 +110,15 @@ export function usePipeline() {
           headers,
         );
 
+        const clean = raw
+          .replace(/^```json\s*/i, '')
+          .replace(/^```\s*/i, '')
+          .replace(/```\s*$/i, '')
+          .trim();
+
         let parsed: ContextPackage;
         try {
-          parsed = ContextPackageSchema.parse(JSON.parse(raw));
+          parsed = ContextPackageSchema.parse(JSON.parse(clean));
         } catch {
           throw new Error(`build-context retornou JSON inválido na tentativa ${attempt}`);
         }
