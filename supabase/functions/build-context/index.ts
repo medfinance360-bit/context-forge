@@ -9,6 +9,8 @@ const CORS = {
 
 function buildSystem(taskType: string, strategy: string): string {
   return `
+CRITICAL: Return ONLY raw JSON. No markdown. No backticks. No explanation. The very first character of your response must be { and the last must be }.
+
 Você é um engenheiro de contexto especialista.
 Sua tarefa é montar um pacote de contexto canônico em JSON estrito para a tarefa classificada como: ${taskType}.
 Estratégia recomendada: ${strategy}

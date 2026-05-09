@@ -120,7 +120,10 @@ export function usePipeline() {
         try {
           parsed = ContextPackageSchema.parse(JSON.parse(clean));
         } catch {
-          throw new Error(`build-context retornou JSON inválido na tentativa ${attempt}`);
+          console.error('build-context raw response:', clean.slice(0, 500));
+          throw new Error(
+            `build-context retornou JSON inválido na tentativa ${attempt}: ${clean.slice(0, 100)}`,
+          );
         }
 
         contextPackage = parsed;
