@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 
 export function Landing() {
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-background px-8">
+    <div className="safe-x safe-bottom flex min-h-svh flex-col items-center justify-center bg-background px-4 py-12 sm:py-16">
       <div className="w-full max-w-lg text-center">
         <div className="flex justify-center">
           <BrandMark

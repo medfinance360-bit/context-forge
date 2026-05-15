@@ -1,4 +1,5 @@
 # prompt.do — Brand & Design System
+
 > Version 1.0 · May 2026 · Internal reference
 
 *A Vault for prompts. Built for professionals.*
@@ -20,11 +21,13 @@
 Profissional, claro e direto. Sem jargão corporativo, sem entusiasmo artificial.
 
 **Faça:**
+
 - "Prompt salvo." — confirma sem comemorar
 - "Faça login para gerar prompts." — instrução clara
 - "Cancel anytime." — promessa curta, verdadeira
 
 **Não faça:**
+
 - "Uhuu! Seu prompt incrível foi salvo com sucesso! 🎉"
 - "Oops! Algo deu errado :(" — sem contexto não ajuda ninguém
 
@@ -44,17 +47,19 @@ Profissional, claro e direto. Sem jargão corporativo, sem entusiasmo artificial
 
 > Dark mode exclusivo. Nunca use HEX direto — sempre tokens HSL.
 
-| Token | HSL | HEX | Uso |
-|---|---|---|---|
-| `background` | 0 0% 4% | `#0a0a0a` | Fundo global |
-| `card / popover` | 0 0% 6% | `#0f0f0f` | Cards, dialogs |
-| `foreground` | 0 0% 95% | `#F2F2F2` | Texto primário |
-| `muted-foreground` | 0 0% 60% | `#999999` | Texto secundário |
-| `border / input` | 0 0% 14% | `#232323` | Linhas, inputs |
-| `ring` | 0 0% 23% | `#3A3A3A` | Foco visual |
-| `accent / muted` | 0 0% 10% | `#1A1A1A` | Hover, badges |
-| `primary` | 0 0% 95% | `#F2F2F2` | Botão CTA |
-| `destructive` | 0 62% 50% | `#D03333` | Erros, delete |
+
+| Token              | HSL       | HEX       | Uso              |
+| ------------------ | --------- | --------- | ---------------- |
+| `background`       | 0 0% 4%   | `#0a0a0a` | Fundo global     |
+| `card / popover`   | 0 0% 6%   | `#0f0f0f` | Cards, dialogs   |
+| `foreground`       | 0 0% 95%  | `#F2F2F2` | Texto primário   |
+| `muted-foreground` | 0 0% 60%  | `#999999` | Texto secundário |
+| `border / input`   | 0 0% 14%  | `#232323` | Linhas, inputs   |
+| `ring`             | 0 0% 23%  | `#3A3A3A` | Foco visual      |
+| `accent / muted`   | 0 0% 10%  | `#1A1A1A` | Hover, badges    |
+| `primary`          | 0 0% 95%  | `#F2F2F2` | Botão CTA        |
+| `destructive`      | 0 62% 50% | `#D03333` | Erros, delete    |
+
 
 **Regra de ouro:** Nunca `text-white`, `bg-black`. Use sempre tokens semânticos.
 
@@ -64,13 +69,15 @@ Profissional, claro e direto. Sem jargão corporativo, sem entusiasmo artificial
 
 Inter é a única família tipográfica oficial.
 
-| Estilo | Tamanho | Peso | Uso |
-|---|---|---|---|
-| Display | 24–32px | 300 | Títulos de página, hero |
-| Heading | 16–20px | 500 | Cabeçalhos de seção e cards |
-| Body | 14px | 400 | Texto base, descrições |
-| Label / UI | 12px | 500 | Toggles, abas |
-| Caption / Meta | 11px | 500 | Badges, timestamps |
+
+| Estilo         | Tamanho | Peso | Uso                         |
+| -------------- | ------- | ---- | --------------------------- |
+| Display        | 24–32px | 300  | Títulos de página, hero     |
+| Heading        | 16–20px | 500  | Cabeçalhos de seção e cards |
+| Body           | 14px    | 400  | Texto base, descrições      |
+| Label / UI     | 12px    | 500  | Toggles, abas               |
+| Caption / Meta | 11px    | 500  | Badges, timestamps          |
+
 
 - Letter-spacing `-0.01em` em headings
 - Line-height `1.5` em body, `1.2` em headings
@@ -82,6 +89,7 @@ Inter é a única família tipográfica oficial.
 ## 6. Forma, raio e espaço
 
 **Border radius** (base `--radius: 1rem / 16px`):
+
 - `lg` = 16px — cards, dialogs, inputs grandes
 - `md` = 14px — botões médios
 - `sm` = 12px — badges, toggles
@@ -97,14 +105,17 @@ Inter é a única família tipográfica oficial.
 
 ### Botões
 
-| Variante | Aparência | Uso |
-|---|---|---|
-| `default` | `bg-foreground / text-background` | Ação primária (Salvar, Forjar) |
-| `outline` | `border / hover:bg-accent` | Ações secundárias |
-| `ghost` | `hover:bg-accent` | Ícones em cards |
-| `destructive` | `bg-destructive` | Confirmação de delete |
+
+| Variante      | Aparência                         | Uso                            |
+| ------------- | --------------------------------- | ------------------------------ |
+| `default`     | `bg-foreground / text-background` | Ação primária (Salvar, Forjar) |
+| `outline`     | `border / hover:bg-accent`        | Ações secundárias              |
+| `ghost`       | `hover:bg-accent`                 | Ícones em cards                |
+| `destructive` | `bg-destructive`                  | Confirmação de delete          |
+
 
 ### Cards (VaultPackageCard)
+
 - `rounded-2xl border-border/40 hover:border-border`
 - `bg-card/50` padrão, `bg-card` no hover
 - Ações: `opacity-0 group-hover:opacity-100`
@@ -112,11 +123,13 @@ Inter é a única família tipográfica oficial.
 - Tags: `bg-accent/50 text-muted-foreground/80`
 
 ### Badges
+
 - REASONING: azul | EXTRACTION: roxo | AGENT: laranja | CODE: verde
 - gap_score: verde ≥0.9 | amarelo 0.5–0.9 | vermelho <0.5
 - Tamanho 11px, padding 0.5rem
 
 ### Diálogos
+
 - `rounded-2xl bg-card`
 - Overlay: `backdrop-blur-sm bg-background/80`
 - Footer: botões alinhados à direita
@@ -149,7 +162,7 @@ Inter é a única família tipográfica oficial.
 - Mobile-first; breakpoint `sm (640px)`
 - Viewport mínimo: 360px
 - `manifest.json`: `display: standalone`, `theme: #0a0a0a`
-- Service Worker: **nunca interceptar `/auth`**
+- Service Worker: **nunca interceptar `/auth*`*
 - Safe-areas: `env(safe-area-inset-*)`
 - `color-scheme: dark` no html
 
@@ -163,3 +176,4 @@ Inter é a única família tipográfica oficial.
 - ❌ Strings hardcoded em JSX
 - ❌ Buscar dados dentro de cards (use props)
 - ❌ Edge function sem session válida
+
