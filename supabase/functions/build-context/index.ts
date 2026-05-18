@@ -117,6 +117,7 @@ ${attemptNote}
       body: JSON.stringify({
         model:       'gpt-4o',
         temperature: attempt === 0 ? 0.7 : 0.3,  // mais conservador no refinamento
+        max_tokens:  2048,
         stream,
         messages: [
           { role: 'system', content: systemPrompt },
