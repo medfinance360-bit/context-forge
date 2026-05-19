@@ -51,18 +51,23 @@ export function useSSEStream(options: UseSSEStreamOptions = {}) {
         setPhase('streaming');
         const reader  = res.body.getReader();
         const decoder = new TextDecoder();
+        let lineBuffer = '';
+        let sseCompleted = false;
 
         while (true) {
           const { done, value } = await reader.read();
           if (done) break;
 
-          const raw = decoder.decode(value, { stream: true });
+          lineBuffer += decoder.decode(value, { stream: true });
 
-          // Parseia SSE linha por linha
-          for (const line of raw.split('\n')) {
+          // Processa apenas linhas completas (terminadas em \n)
+          const lines = lineBuffer.split('\n');
+          lineBuffer = lines.pop() ?? '';
+
+          for (const line of lines) {
             if (!line.startsWith('data: ')) continue;
             const payload = line.slice(6).trim();
-            if (payload === '[DONE]') break;
+            if (payload === '[DONE]') { sseCompleted = true; break; }
 
             try {
               const parsed = JSON.parse(payload);
@@ -78,6 +83,7 @@ export function useSSEStream(options: UseSSEStreamOptions = {}) {
               // o orchestrator processa separado
             }
           }
+          if (sseCompleted) break;
         }
 
         setPhase('done');
@@ -129,21 +135,30 @@ export function useSSEStream(options: UseSSEStreamOptions = {}) {
       const reader  = res.body.getReader();
       const decoder = new TextDecoder();
       let accumulated = '';
+      let lineBuffer = '';
+      let sseCompleted = false;
 
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        const raw = decoder.decode(value, { stream: true });
-        for (const line of raw.split('\n')) {
+
+        lineBuffer += decoder.decode(value, { stream: true });
+
+        // Processa apenas linhas completas para evitar parse de fragmentos TCP
+        const lines = lineBuffer.split('\n');
+        lineBuffer = lines.pop() ?? '';
+
+        for (const line of lines) {
           if (!line.startsWith('data: ')) continue;
           const payload = line.slice(6).trim();
-          if (payload === '[DONE]') break;
+          if (payload === '[DONE]') { sseCompleted = true; break; }
           try {
             const parsed = JSON.parse(payload);
             const delta: string = parsed?.choices?.[0]?.delta?.content ?? '';
             accumulated += delta;
           } catch { /* ignora */ }
         }
+        if (sseCompleted) break;
       }
 
       return accumulated;
