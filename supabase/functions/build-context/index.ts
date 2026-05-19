@@ -127,8 +127,9 @@ Deno.serve(async (req) => {
     }
 
     const intent   = body.intent;
-    const rawInput: string = body.raw_input;
-    const attempt: number  = body.attempt ?? 0;
+    const rawInput: string  = body.raw_input;
+    const attempt: number   = body.attempt ?? 0;
+    const previousGaps: string[] = Array.isArray(body.previous_gaps) ? body.previous_gaps : [];
 
     const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) {
@@ -143,7 +144,12 @@ Deno.serve(async (req) => {
     const systemPrompt = buildSystem(taskType, strategy);
 
     const attemptNote = attempt > 0
-      ? `\n\n[REFINAMENTO ${attempt}] Melhore o pacote anterior. Foque em preencher lacunas (especialmente retrieval.docs) e aumentar o gap_score.`
+      ? `\n\n[REFINAMENTO ${attempt}] Corrija os problemas específicos abaixo (em ordem de prioridade):
+${previousGaps.length > 0
+  ? previousGaps.map((g, i) => `${i + 1}. ${g}`).join('\n')
+  : '1. Aumente a especificidade de todos os campos\n2. Expanda retrieval.docs com mais itens do input\n3. Torne steps mais concretos e verificáveis'}
+
+REGRA CRÍTICA: o pacote refinado deve conter NO MÍNIMO a mesma quantidade de informação da tentativa anterior. Nunca remova itens de retrieval.docs ou steps.`
       : '';
 
     const userMessage = `

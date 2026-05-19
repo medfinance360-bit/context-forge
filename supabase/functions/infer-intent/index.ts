@@ -110,7 +110,7 @@ Deno.serve(async (req) => {
 
     const clean = content.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 
-    let parsed: unknown;
+    let parsed: Record<string, unknown>;
     try {
       parsed = JSON.parse(clean);
     } catch {
@@ -119,6 +119,21 @@ Deno.serve(async (req) => {
         JSON.stringify({ error: 'Modelo retornou JSON inválido', raw: clean.slice(0, 200) }),
         { status: 502, headers: { ...CORS, 'Content-Type': 'application/json' } },
       );
+    }
+
+    // Guardrail: se objective ainda é administrativo, força re-extração
+    const adminPattern = /\b(preencher|fazer inscrição|inscrever|submeter|candidatura|inscrição|formulário|se inscrever|fazer o cadastro)\b/i;
+    const objective = typeof parsed.objective === 'string' ? parsed.objective : '';
+    if (adminPattern.test(objective)) {
+      const fixMsg = `Plataforma alvo: ${platform}\n\nInput do usuário:\n${rawInput}\n\n[CORREÇÃO OBRIGATÓRIA] Seu objective anterior era administrativo: "${objective}". Extraia APENAS o objetivo do PRODUTO ou DESAFIO real — o que deve ser construído, desenvolvido ou analisado. Ignore completamente instruções de submissão, formulários e prazos.`;
+      let fixedContent: string;
+      try {
+        fixedContent = await callOpenAI(apiKey, SYSTEM, fixMsg, 0.1);
+        const fixedClean = fixedContent.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
+        parsed = JSON.parse(fixedClean);
+      } catch {
+        console.warn('Re-extração de objective falhou, mantendo resultado original');
+      }
     }
 
     return new Response(JSON.stringify(parsed), {
