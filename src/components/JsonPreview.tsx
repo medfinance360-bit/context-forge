@@ -3,7 +3,8 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { ChevronDown, ChevronRight, Copy } from 'lucide-react';
 import { toast } from 'sonner';
-import type { ContextPackage, Validation } from '../lib/contract';
+import type { ContextPackage, Validation, Platform } from '../lib/contract';
+import { formatForPlatform, PLATFORM_FORMAT_LABELS } from '../lib/formatters';
 import { cn } from '../lib/utils';
 
 const PACKAGE_BLOCK_ORDER = [
@@ -98,10 +99,11 @@ function CollapsibleJson({ title, json, defaultOpen = false }: CollapsibleJsonPr
 interface JsonPreviewProps {
   pkg: ContextPackage | null;
   validation?: Validation | null;
+  platform?: Platform;
   className?: string;
 }
 
-export function JsonPreview({ pkg, validation, className }: JsonPreviewProps) {
+export function JsonPreview({ pkg, validation, platform, className }: JsonPreviewProps) {
   const fullJson = useMemo(() => {
     if (!pkg) return '';
     const envelope: Record<string, unknown> = { ...pkg };
@@ -126,14 +128,26 @@ export function JsonPreview({ pkg, validation, className }: JsonPreviewProps) {
     <div className={cn('flex h-full min-h-0 flex-col gap-5', className)}>
       <div className="flex items-center justify-between gap-3">
         <p className="text-xs font-medium text-muted-foreground">Pré-visualização</p>
-        <button
-          type="button"
-          onClick={() => void copyText(fullJson, 'JSON completo copiado.')}
-          className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
-        >
-          <Copy className="size-3" />
-          Copiar tudo
-        </button>
+        <div className="flex items-center gap-2">
+          {platform && pkg && (
+            <button
+              type="button"
+              onClick={() => void copyText(formatForPlatform(pkg, platform), `${PLATFORM_FORMAT_LABELS[platform].replace('Copiar ', '')} copiado.`)}
+              className="inline-flex items-center gap-1.5 rounded-md bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary transition-colors hover:bg-primary/20"
+            >
+              <Copy className="size-3" />
+              {PLATFORM_FORMAT_LABELS[platform]}
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => void copyText(fullJson, 'JSON completo copiado.')}
+            className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground transition-colors hover:text-foreground"
+          >
+            <Copy className="size-3" />
+            Copiar JSON
+          </button>
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 space-y-1 overflow-y-auto pr-0.5">

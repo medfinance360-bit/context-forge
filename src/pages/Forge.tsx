@@ -350,6 +350,7 @@ export function Forge() {
             <JsonPreview
               pkg={previewPackage}
               validation={previewValidation}
+              platform={platform}
               className="min-h-0 flex-1 sm:min-h-[min(55vh,580px)] lg:min-h-0"
             />
           </div>

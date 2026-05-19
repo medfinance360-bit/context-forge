@@ -1,6 +1,6 @@
 // supabase/functions/validate-context/index.ts
 // Recebe intent + package, calcula gap_score e decide accept | refine_partial | refine_full.
-// Modelo: gpt-4o-mini (rápido). Sem stream.
+// Modelo: claude-3-5-sonnet. Sem stream.
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -11,19 +11,24 @@ const SYSTEM = `
 Você é um validador de qualidade para pacotes de contexto de IA.
 Dado um intent e um pacote de contexto gerado, avalie a qualidade e retorne um JSON de validação.
 
-Critérios de avaliação (cada um vale 0.0 a 1.0, calcule a média):
-1. completude: todos os campos do contrato estão preenchidos de forma específica?
-2. alinhamento: o pacote reflete fielmente a intent extraída?
-3. especificidade: evita placeholders genéricos como "descrição aqui"?
-4. separação_instrucao_dados: user_data usa delimitador e está isolado das instruções?
-5. estrategia: a estratégia escolhida é adequada para o task_type?
+Critérios de avaliação (cada um vale 0.0 a 1.0, calcule a média ponderada):
+1. completude (peso 2): todos os campos do contrato estão preenchidos de forma específica e não-genérica?
+2. alinhamento (peso 2): o pacote reflete o OBJETIVO DO PRODUTO/DESAFIO da intent, não tarefas administrativas?
+3. especificidade (peso 2): evita placeholders como "descrição aqui", "exemplo", steps genéricos como "Preencher formulário"?
+4. retrieval_qualidade (peso 1.5): retrieval.docs contém contexto extraído do input (trilhas, specs, opções)? retrieval.exemplars tem exemplos concretos se task_type for EXTRACTION ou CODE?
+5. contrato_antihalucination (peso 2.5): stop_condition é mensurável? fallback é uma ação concreta? self_check tem perguntas verificáveis? acceptance_criteria são objetivos?
+
+Penalidades automáticas (reduzem o gap_score):
+- Se contract.objective mencionar "preencher formulário", "fazer inscrição" ou similares: -0.3
+- Se retrieval.docs estiver vazio quando o input mencionar trilhas/opções/specs: -0.2
+- Se steps contiver apenas passos genéricos sem especificidade ao domínio: -0.2
 
 Retorne SOMENTE este JSON (sem markdown, sem texto extra):
 {
-  "gap_score": número de 0.0 a 1.0 (média dos critérios),
+  "gap_score": número de 0.0 a 1.0 (média ponderada com penalidades aplicadas),
   "gaps": ["array de strings — problemas específicos encontrados, vazio se gap_score >= 0.9"],
   "decision": "accept | refine_partial | refine_full",
-  "notes": "string opcional — observação geral"
+  "notes": "string opcional — observação geral sobre a qualidade"
 }
 
 Regras de decision:
@@ -31,8 +36,32 @@ Regras de decision:
 - 0.5 <= gap_score < 0.9 → "refine_partial"
 - gap_score < 0.5 → "refine_full"
 
-Seja criterioso. Um gap_score alto exige que o pacote seja realmente completo e específico.
+Seja criterioso. Um gap_score alto exige pacote realmente completo, específico e alinhado ao desafio real.
 `.trim();
+
+async function callClaude(apiKey: string, system: string, userMsg: string, temperature: number): Promise<string> {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: {
+      'x-api-key': apiKey,
+      'anthropic-version': '2023-06-01',
+      'content-type': 'application/json',
+    },
+    body: JSON.stringify({
+      model: 'claude-3-5-sonnet-20241022',
+      max_tokens: 1024,
+      temperature,
+      system,
+      messages: [{ role: 'user', content: userMsg }],
+    }),
+  });
+  if (!res.ok) {
+    const err = await res.text();
+    throw new Error(`Anthropic ${res.status}: ${err}`);
+  }
+  const data = await res.json();
+  return data.content?.[0]?.text ?? '';
+}
 
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -48,10 +77,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('OPENAI_API_KEY');
+    const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: 'OPENAI_API_KEY não configurada' }),
+        JSON.stringify({ error: 'ANTHROPIC_API_KEY não configurada' }),
         { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } },
       );
     }
@@ -64,34 +93,18 @@ Pacote de contexto gerado:
 ${JSON.stringify(body.package, null, 2)}
 `.trim();
 
-    const aiRes = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model:       'gpt-4o-mini',
-        temperature: 0.1,
-        messages: [
-          { role: 'system', content: SYSTEM },
-          { role: 'user',   content: userMessage },
-        ],
-      }),
-    });
-
-    if (!aiRes.ok) {
-      const err = await aiRes.text();
-      console.error('OpenAI error:', err);
+    let content: string;
+    try {
+      content = await callClaude(apiKey, SYSTEM, userMessage, 0.1);
+    } catch (err) {
+      console.error('Anthropic error:', err);
       return new Response(
-        JSON.stringify({ error: 'Erro ao chamar OpenAI' }),
+        JSON.stringify({ error: 'Erro ao chamar Claude' }),
         { status: 502, headers: { ...CORS, 'Content-Type': 'application/json' } },
       );
     }
 
-    const data = await aiRes.json();
-    const content: string = data.choices?.[0]?.message?.content ?? '';
-    const clean = content.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+    const clean = content.replace(/^```json\s*/i, '').replace(/^```\s*/i, '').replace(/```\s*$/i, '').trim();
 
     let parsed: unknown;
     try {
