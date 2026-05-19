@@ -20,10 +20,29 @@ jobs:
         with:
           version: 1.207.9
 
+      - name: Verify project ref and token
+        run: |
+          echo "Project ref length: ${#SUPABASE_PROJECT_REF}"
+          curl -s -o /tmp/proj.json -w "HTTP %{http_code}" \
+            "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN"
+          echo ""
+          cat /tmp/proj.json | head -c 200
+          echo ""
+          echo "Listing functions:"
+          curl -s -o /tmp/funcs.json -w "HTTP %{http_code}" \
+            "https://api.supabase.com/v1/projects/$SUPABASE_PROJECT_REF/functions" \
+            -H "Authorization: Bearer $SUPABASE_ACCESS_TOKEN"
+          echo ""
+          cat /tmp/funcs.json | head -c 500
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
+
       - name: Deploy edge functions
         run: |
-          supabase functions deploy infer-intent    --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt
-          supabase functions deploy build-context   --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt
-          supabase functions deploy validate-context --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt
+          supabase functions deploy infer-intent     --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --debug
+          supabase functions deploy build-context    --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --debug
+          supabase functions deploy validate-context --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --debug
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
