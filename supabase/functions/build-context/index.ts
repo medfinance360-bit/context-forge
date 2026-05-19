@@ -21,14 +21,16 @@ Exemplos do que NÃO fazer:
 O teste: se o campo faria sentido para QUALQUER outro input, está errado.
 
 USER_DATA — Síntese estruturada (NÃO copie o input):
-- user_data.content deve conter APENAS os dados concretos e factuais extraídos do input (nomes, valores, URLs, requisitos específicos, restrições reais). Reescreva de forma limpa e estruturada. Máximo 3-4 linhas.
+- user_data.content deve conter os dados concretos e factuais do input (nomes, valores, URLs, requisitos, restrições reais), reescritos de forma limpa e estruturada.
+- PROIBIDO resumir ou descartar informação. Se o input tem 10 regras, o content deve preservar todas as 10. Perda de informação é um erro crítico.
+- NÃO copie verbatim. Sintetize mantendo TODA a substância.
 
 SYSTEM_IMMUTABLE — Instruções de domínio específico:
 - Escreva instruções que só fariam sentido para ESTE domínio e ESTE objetivo específico.
 - Inclua restrições do domínio real, tom adequado ao público-alvo, e o que o modelo NUNCA deve fazer neste contexto.
 
-RETRIEVAL — Extração ativa de contexto (OBRIGATÓRIO):
-- retrieval.docs: Extraia estruturas concretas do input (trilhas, opções, requisitos, specs, frameworks). Cada item deve ser uma string descritiva e específica. Nunca deixe vazio se houver estrutura no input.
+RETRIEVAL — Extração COMPLETA de contexto (OBRIGATÓRIO — PROIBIDO OMITIR):
+- retrieval.docs: Extraia TODOS os itens estruturados do input — cada regra, requisito, opção, trilha, restrição, spec, formato ou referência técnica deve gerar pelo menos um item. Se o input tem 15 requisitos, retrieval.docs deve ter no mínimo 15 itens. Omitir informação do input é um erro crítico.
 - retrieval.exemplars: Para EXTRACTION ou CODE, crie 1-2 exemplos few-shot concretos com input/output reais do domínio. Para outros tipos, array vazio.
 
 CONTRATO — Anti-alucinação:
@@ -55,7 +57,7 @@ O primeiro caractere deve ser { e o último deve ser }:
   },
   "user_data": {
     "delimiter": "<<<USER_DATA>>>",
-    "content": "string — síntese limpa dos dados concretos do usuário: fatos, valores, nomes, requisitos. NÃO copie o input verbatim. Máximo 4 linhas."
+    "content": "string — síntese estruturada dos dados concretos do usuário: fatos, valores, nomes, requisitos, restrições. NÃO copie verbatim. NÃO descarte informação. Preserve toda a substância do input."
   },
   "retrieval": {
     "exemplars": ["exemplo few-shot concreto se EXTRACTION/CODE, senão array vazio"],
@@ -125,8 +127,9 @@ Deno.serve(async (req) => {
     }
 
     const intent   = body.intent;
-    const rawInput: string = body.raw_input;
-    const attempt: number  = body.attempt ?? 0;
+    const rawInput: string  = body.raw_input;
+    const attempt: number   = body.attempt ?? 0;
+    const previousGaps: string[] = Array.isArray(body.previous_gaps) ? body.previous_gaps : [];
 
     const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) {
@@ -141,7 +144,12 @@ Deno.serve(async (req) => {
     const systemPrompt = buildSystem(taskType, strategy);
 
     const attemptNote = attempt > 0
-      ? `\n\n[REFINAMENTO ${attempt}] Melhore o pacote anterior. Foque em preencher lacunas (especialmente retrieval.docs) e aumentar o gap_score.`
+      ? `\n\n[REFINAMENTO ${attempt}] Corrija os problemas específicos abaixo (em ordem de prioridade):
+${previousGaps.length > 0
+  ? previousGaps.map((g, i) => `${i + 1}. ${g}`).join('\n')
+  : '1. Aumente a especificidade de todos os campos\n2. Expanda retrieval.docs com mais itens do input\n3. Torne steps mais concretos e verificáveis'}
+
+REGRA CRÍTICA: o pacote refinado deve conter NO MÍNIMO a mesma quantidade de informação da tentativa anterior. Nunca remova itens de retrieval.docs ou steps.`
       : '';
 
     const userMessage = `

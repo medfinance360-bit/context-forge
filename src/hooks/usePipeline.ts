@@ -104,7 +104,14 @@ export function usePipeline() {
         const res = await fetch(getEdgeFunctionUrl('build-context'), {
           method:  'POST',
           headers: { 'Content-Type': 'application/json', ...headers },
-          body:    JSON.stringify({ intent, raw_input: rawInput, attempt }),
+          body:    JSON.stringify({
+            intent,
+            raw_input: rawInput,
+            attempt,
+            ...(attempt > 0 && lastValidation?.gaps?.length
+              ? { previous_gaps: lastValidation.gaps }
+              : {}),
+          }),
         });
         if (!res.ok) throw new Error(`build-context: ${await res.text()}`);
 
