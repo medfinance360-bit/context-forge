@@ -1,6 +1,6 @@
 // supabase/functions/validate-context/index.ts
 // Recebe intent + package, calcula gap_score e decide accept | refine_partial | refine_full.
-// Modelo: claude-3-5-sonnet. Sem stream.
+// Modelo: gpt-4o-mini. Sem stream.
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -39,28 +39,29 @@ Regras de decision:
 Seja criterioso. Um gap_score alto exige pacote realmente completo, específico e alinhado ao desafio real.
 `.trim();
 
-async function callClaude(apiKey: string, system: string, userMsg: string, temperature: number): Promise<string> {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+async function callOpenAI(apiKey: string, system: string, userMsg: string, temperature: number): Promise<string> {
+  const res = await fetch('https://api.openai.com/v1/chat/completions', {
     method: 'POST',
     headers: {
-      'x-api-key': apiKey,
-      'anthropic-version': '2023-06-01',
-      'content-type': 'application/json',
+      'Authorization': `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      model: 'claude-3-5-sonnet-20241022',
+      model: 'gpt-4o-mini',
       max_tokens: 1024,
       temperature,
-      system,
-      messages: [{ role: 'user', content: userMsg }],
+      messages: [
+        { role: 'system', content: system },
+        { role: 'user', content: userMsg },
+      ],
     }),
   });
   if (!res.ok) {
     const err = await res.text();
-    throw new Error(`Anthropic ${res.status}: ${err}`);
+    throw new Error(`OpenAI ${res.status}: ${err}`);
   }
   const data = await res.json();
-  return data.content?.[0]?.text ?? '';
+  return data.choices?.[0]?.message?.content ?? '';
 }
 
 Deno.serve(async (req) => {
@@ -77,10 +78,10 @@ Deno.serve(async (req) => {
       );
     }
 
-    const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) {
       return new Response(
-        JSON.stringify({ error: 'ANTHROPIC_API_KEY não configurada' }),
+        JSON.stringify({ error: 'OPENAI_API_KEY não configurada' }),
         { status: 500, headers: { ...CORS, 'Content-Type': 'application/json' } },
       );
     }
@@ -95,11 +96,11 @@ ${JSON.stringify(body.package, null, 2)}
 
     let content: string;
     try {
-      content = await callClaude(apiKey, SYSTEM, userMessage, 0.1);
+      content = await callOpenAI(apiKey, SYSTEM, userMessage, 0.1);
     } catch (err) {
-      console.error('Anthropic error:', err);
+      console.error('OpenAI error:', err);
       return new Response(
-        JSON.stringify({ error: 'Erro ao chamar Claude' }),
+        JSON.stringify({ error: 'Erro ao chamar OpenAI', detail: String(err) }),
         { status: 502, headers: { ...CORS, 'Content-Type': 'application/json' } },
       );
     }
