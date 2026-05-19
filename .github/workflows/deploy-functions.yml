@@ -16,46 +16,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Deploy edge functions via Management API
+      - uses: supabase/setup-cli@v1
+        with:
+          version: 1.207.9
+
+      - name: Deploy edge functions
+        run: |
+          supabase functions deploy infer-intent    --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt
+          supabase functions deploy build-context   --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt
+          supabase functions deploy validate-context --project-ref ${{ secrets.SUPABASE_PROJECT_REF }} --no-verify-jwt
         env:
           SUPABASE_ACCESS_TOKEN: ${{ secrets.SUPABASE_ACCESS_TOKEN }}
-          SUPABASE_PROJECT_REF: ${{ secrets.SUPABASE_PROJECT_REF }}
-        run: |
-          deploy_function() {
-            local slug="$1"
-            local file="supabase/functions/${slug}/index.ts"
-            local body
-            body=$(cat "$file")
-
-            echo "Deploying ${slug}..."
-
-            # Tenta PATCH (atualizar). Se 404, cria com POST.
-            status=$(curl -s -o /tmp/res.json -w "%{http_code}" \
-              -X PATCH \
-              "https://api.supabase.com/v1/projects/${SUPABASE_PROJECT_REF}/functions/${slug}" \
-              -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
-              -H "Content-Type: application/json" \
-              --data-binary "$(jq -n --arg body "$body" --arg slug "$slug" \
-                '{slug: $slug, name: $slug, body: $body, verify_jwt: true}')")
-
-            if [ "$status" = "404" ]; then
-              echo "${slug} não existe — criando..."
-              curl -s -o /tmp/res.json -w "%{http_code}\n" \
-                -X POST \
-                "https://api.supabase.com/v1/projects/${SUPABASE_PROJECT_REF}/functions" \
-                -H "Authorization: Bearer ${SUPABASE_ACCESS_TOKEN}" \
-                -H "Content-Type: application/json" \
-                --data-binary "$(jq -n --arg body "$body" --arg slug "$slug" \
-                  '{slug: $slug, name: $slug, body: $body, verify_jwt: true}')"
-            elif [ "$status" != "200" ]; then
-              echo "Erro ao deployar ${slug} (HTTP ${status}):"
-              cat /tmp/res.json
-              exit 1
-            else
-              echo "${slug} deployado com sucesso."
-            fi
-          }
-
-          deploy_function "infer-intent"
-          deploy_function "build-context"
-          deploy_function "validate-context"
