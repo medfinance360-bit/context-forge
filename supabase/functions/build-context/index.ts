@@ -96,7 +96,7 @@ async function callOpenAI(apiKey: string, system: string, userMsg: string, tempe
     },
     body: JSON.stringify({
       model: 'gpt-4o',
-      max_tokens: 2048,
+      max_tokens: 4096,
       temperature,
       messages: [
         { role: 'system', content: system },
