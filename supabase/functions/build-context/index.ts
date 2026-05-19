@@ -147,7 +147,7 @@ ${attemptNote}
     } catch (err) {
       console.error('Anthropic error:', err);
       return new Response(
-        JSON.stringify({ error: 'Erro ao chamar Claude' }),
+        JSON.stringify({ error: 'Erro ao chamar Claude', detail: String(err) }),
         { status: 502, headers: { ...CORS, 'Content-Type': 'application/json' } },
       );
     }
