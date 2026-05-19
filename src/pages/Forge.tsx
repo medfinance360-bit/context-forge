@@ -122,6 +122,12 @@ export function Forge() {
     });
   }, [state.events]);
 
+  useEffect(() => {
+    if (state.phase === 'inferring_intent') {
+      setDrawerOpen(false);
+    }
+  }, [state.phase]);
+
   const previewPackage = state.package ?? externalPkg;
   const previewValidation = state.validation ?? externalValidation;
 
@@ -215,17 +221,20 @@ export function Forge() {
     (Boolean(taskType) || previewValidation != null);
 
   return (
-    <div className="flex min-h-0 flex-1 flex-col bg-background">
+    <div className="relative flex min-h-0 min-w-0 flex-1 flex-col overflow-x-hidden bg-background">
       <div
         className={cn(
-          'mx-auto flex min-h-0 w-full max-w-[1500px] flex-1 flex-col px-4 py-8 sm:px-8',
-          showPreview && 'lg:flex-row lg:gap-12 xl:gap-16',
+          'mx-auto flex min-h-0 w-full min-w-0 max-w-[1500px] flex-1 flex-col px-4 py-6 min-[640px]:py-8',
+          'max-[639px]:pb-[calc(9.25rem+env(safe-area-inset-bottom,0px))]',
+          showPreview && 'min-[640px]:flex-row min-[640px]:gap-8 md:gap-12 xl:gap-16',
         )}
       >
         <div
           className={cn(
             'flex min-h-0 flex-col gap-8',
-            showPreview ? 'lg:min-w-0 lg:flex-1 lg:max-w-xl' : 'mx-auto w-full max-w-3xl',
+            showPreview
+              ? 'sm:min-w-0 sm:max-w-xl sm:flex-1'
+              : 'mx-auto w-full max-w-3xl',
           )}
         >
           <div className="flex min-h-0 flex-1 flex-col gap-6">
@@ -243,7 +252,7 @@ export function Forge() {
                 onChange={(e) => setRawInput(e.target.value)}
                 disabled={isRunning}
                 placeholder="Descreva a tarefa, público-alvo, restrições e o que precisa no output…"
-                className="min-h-[300px] flex-1 resize-y text-sm leading-relaxed md:min-h-[340px]"
+                className="min-h-[200px] flex-1 resize-y text-base leading-relaxed sm:min-h-[300px] sm:text-sm md:min-h-[340px]"
               />
             </div>
 
@@ -282,7 +291,7 @@ export function Forge() {
             <Button
               type="button"
               disabled={isRunning}
-              className="w-full"
+              className="hidden h-12 w-full text-base sm:flex sm:text-sm"
               size="lg"
               onClick={() => void handleForge()}
             >
@@ -292,7 +301,7 @@ export function Forge() {
             <button
               type="button"
               onClick={handleClear}
-              className="self-start text-xs text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline"
+              className="min-h-11 self-start touch-manipulation text-base text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline sm:min-h-0 sm:text-xs"
             >
               Limpar execução
             </button>
@@ -306,7 +315,7 @@ export function Forge() {
                     type="button"
                     variant="outline"
                     size="lg"
-                    className="h-12 flex-1 gap-2 rounded-xl"
+                    className="h-12 min-h-11 flex-1 gap-2 rounded-xl text-base sm:text-sm"
                     onClick={() => void copyFullPackageJson()}
                   >
                     <Copy className="size-4" strokeWidth={2} aria-hidden />
@@ -315,7 +324,7 @@ export function Forge() {
                   <Button
                     type="button"
                     size="lg"
-                    className="h-12 flex-1 gap-2 rounded-xl"
+                    className="h-12 min-h-11 flex-1 gap-2 rounded-xl text-base sm:text-sm"
                     disabled={isRunning || vaultSaving}
                     onClick={() => void handleSaveToVault()}
                   >
@@ -327,7 +336,7 @@ export function Forge() {
                   type="button"
                   onClick={handleOptimizeAnother}
                   disabled={isRunning || vaultSaving}
-                  className="w-full pt-1 text-center text-xs text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline disabled:pointer-events-none disabled:opacity-50"
+                  className="min-h-11 w-full touch-manipulation pt-1 text-center text-base text-muted-foreground underline-offset-4 transition-colors hover:text-foreground hover:underline disabled:pointer-events-none disabled:opacity-50 sm:min-h-0 sm:text-xs"
                 >
                   Otimizar outro prompt
                 </button>
@@ -337,17 +346,36 @@ export function Forge() {
         </div>
 
         {showPreview ? (
-          <div className="mt-10 flex min-h-0 flex-1 flex-col pt-6 lg:mt-0 lg:min-w-0 lg:border-l lg:border-border/25 lg:pl-10 lg:pt-2 xl:pl-12">
+          <div className="mt-10 flex min-h-0 flex-1 flex-col border-t border-border/25 pt-6 sm:mt-0 sm:min-w-0 sm:border-l sm:border-t-0 sm:pl-8 sm:pt-2 md:pl-10 xl:pl-12">
             <JsonPreview
               pkg={previewPackage}
               validation={previewValidation}
-              className="min-h-[min(70vh,720px)] lg:min-h-0"
+              className="min-h-0 flex-1 sm:min-h-[min(55vh,580px)] lg:min-h-0"
             />
           </div>
         ) : null}
       </div>
 
-      <EventDrawer open={drawerOpen} onToggle={() => setDrawerOpen((o) => !o)} items={timedEvents} />
+      <div className="mt-auto flex w-full flex-col max-sm:fixed max-sm:inset-x-0 max-sm:bottom-0 max-sm:z-[60] sm:static sm:z-auto">
+        <EventDrawer
+          open={drawerOpen}
+          onToggle={() => setDrawerOpen((o) => !o)}
+          items={timedEvents}
+        />
+        <div className="safe-bottom pointer-events-none border-t border-border/40 bg-background/95 px-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))] pt-3 backdrop-blur-xl sm:hidden">
+          <div className="pointer-events-auto mx-auto w-full max-w-[1500px]">
+            <Button
+              type="button"
+              disabled={isRunning}
+              className="h-12 w-full touch-manipulation text-base shadow-md"
+              size="lg"
+              onClick={() => void handleForge()}
+            >
+              Forjar contexto
+            </Button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

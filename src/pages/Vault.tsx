@@ -167,7 +167,7 @@ export function Vault() {
     inScope.length === 1 ? '1 pacote' : `${inScope.length} pacotes`;
 
   return (
-    <div className="mx-auto max-w-[min(100%,1400px)] px-4 py-8 sm:px-8">
+    <div className="mx-auto max-w-[min(100%,1400px)] px-4 py-6 sm:py-8">
       <header className="space-y-2 border-b border-border/40 pb-6">
         <h1 className="text-3xl font-semibold tracking-tight text-foreground sm:text-4xl">
           Cofre
@@ -202,7 +202,7 @@ export function Vault() {
               setFolderScopeId(null);
               setMoveMenuPackageId(null);
             }}
-            className="text-left text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
+            className="min-h-11 touch-manipulation py-2 text-left text-sm font-medium text-muted-foreground underline-offset-4 hover:text-foreground hover:underline sm:min-h-0 sm:py-0"
           >
             ← Voltar ao cofre principal
           </button>
@@ -210,7 +210,7 @@ export function Vault() {
       </header>
 
       <div className="mt-6 flex flex-col gap-3">
-        <div className="flex min-w-0 gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+        <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             type="button"
             onClick={() => {
@@ -218,7 +218,7 @@ export function Vault() {
               setMoveMenuPackageId(null);
             }}
             className={cn(
-              'shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+              'shrink-0 touch-manipulation rounded-full px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:px-3.5 sm:py-1.5 sm:text-xs',
               folderScopeId === null
                 ? 'bg-primary text-primary-foreground'
                 : 'border border-border bg-background text-muted-foreground hover:border-ring hover:text-foreground',
@@ -235,7 +235,7 @@ export function Vault() {
                 setMoveMenuPackageId(null);
               }}
               className={cn(
-                'max-w-[200px] shrink-0 truncate rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                'max-w-[200px] shrink-0 touch-manipulation truncate rounded-full px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:px-3.5 sm:py-1.5 sm:text-xs',
                 folderScopeId === f.id
                   ? 'bg-primary text-primary-foreground'
                   : 'border border-border bg-background text-muted-foreground hover:border-ring hover:text-foreground',
@@ -252,7 +252,7 @@ export function Vault() {
                 value={newFolderName}
                 onChange={(e) => setNewFolderName(e.target.value)}
                 placeholder="Nome da pasta"
-                className="h-8 w-40 rounded-full text-xs"
+                className="h-11 min-h-11 w-[min(100%,240px)] rounded-full text-base sm:h-8 sm:min-h-0 sm:w-40 sm:text-xs md:text-sm"
                 onKeyDown={(e) => {
                   if (e.key === 'Enter') void handleCreateFolder();
                   if (e.key === 'Escape') {
@@ -261,14 +261,19 @@ export function Vault() {
                   }
                 }}
               />
-              <Button type="button" size="sm" className="h-8 rounded-full px-3 text-xs" onClick={() => void handleCreateFolder()}>
+              <Button
+                type="button"
+                size="sm"
+                className="min-h-11 rounded-full px-4 text-base sm:h-8 sm:min-h-0 sm:text-xs"
+                onClick={() => void handleCreateFolder()}
+              >
                 Criar
               </Button>
               <Button
                 type="button"
                 variant="ghost"
                 size="sm"
-                className="h-8 rounded-full px-2 text-xs"
+                className="min-h-11 rounded-full px-4 text-base sm:h-8 sm:min-h-0 sm:text-xs"
                 onClick={() => {
                   setCreatingFolder(false);
                   setNewFolderName('');
@@ -282,7 +287,7 @@ export function Vault() {
               type="button"
               variant="outline"
               size="sm"
-              className="h-8 shrink-0 rounded-full gap-1 px-3 text-xs"
+              className="min-h-11 shrink-0 touch-manipulation gap-1 rounded-full px-4 text-base sm:h-8 sm:min-h-0 sm:text-xs"
               onClick={() => setCreatingFolder(true)}
             >
               <FolderPlus className="size-3.5" aria-hidden />
@@ -292,13 +297,13 @@ export function Vault() {
         </div>
       </div>
 
-      <div className="mt-6 flex flex-col gap-6 lg:flex-row lg:items-center lg:justify-between lg:gap-8">
-        <div className="flex min-w-0 gap-1.5 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+      <div className="mt-6 flex min-w-0 flex-col gap-4 sm:flex-row sm:items-center sm:justify-between sm:gap-8 lg:gap-8">
+        <div className="flex min-w-0 gap-2 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
           <button
             type="button"
             onClick={() => setFilterType('all')}
             className={cn(
-              'shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+              'shrink-0 touch-manipulation rounded-full px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:px-3.5 sm:py-1.5 sm:text-xs',
               filterType === 'all'
                 ? 'bg-primary text-primary-foreground'
                 : 'border border-border bg-background text-muted-foreground hover:border-ring hover:text-foreground',
@@ -312,7 +317,7 @@ export function Vault() {
               type="button"
               onClick={() => setFilterType(tt)}
               className={cn(
-                'shrink-0 rounded-full px-3.5 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                'shrink-0 touch-manipulation rounded-full px-4 py-2.5 text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background sm:px-3.5 sm:py-1.5 sm:text-xs',
                 filterType === tt
                   ? 'bg-primary text-primary-foreground'
                   : 'border border-border bg-background text-muted-foreground hover:border-ring hover:text-foreground',
@@ -323,8 +328,8 @@ export function Vault() {
           ))}
         </div>
 
-        <div className="flex w-full flex-col gap-3 sm:flex-row sm:items-center sm:justify-end lg:max-w-xl">
-          <div className="relative min-w-0 flex-1 sm:min-w-[280px] sm:flex-initial">
+        <div className="flex w-full min-w-0 flex-col gap-3 sm:w-auto sm:flex-row sm:items-center sm:justify-end lg:max-w-xl">
+          <div className="relative w-full min-w-0 sm:w-auto sm:min-w-[280px]">
             <Search
               className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
               aria-hidden
@@ -335,7 +340,7 @@ export function Vault() {
               value={q}
               onChange={(e) => setQ(e.target.value)}
               placeholder="Buscar pacotes…"
-              className="h-10 rounded-full pl-10 pr-14"
+              className="h-11 min-h-11 w-full rounded-full pl-10 pr-12 text-base sm:h-10 sm:min-h-0 sm:pr-14 sm:text-sm md:text-sm"
             />
             <kbd className="pointer-events-none absolute right-2.5 top-1/2 hidden -translate-y-1/2 rounded-md border border-border bg-muted px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:inline">
               Ctrl K
@@ -343,32 +348,32 @@ export function Vault() {
           </div>
 
           <div className="flex shrink-0 items-center justify-end gap-1.5">
-            <div className="flex rounded-full border border-border bg-muted p-0.5">
+            <div className="flex shrink-0 rounded-full border border-border bg-muted p-0.5">
               <button
                 type="button"
                 aria-label="Vista em grade"
                 onClick={() => setView('grid')}
                 className={cn(
-                  'rounded-full p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  'flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-h-0 sm:min-w-0 sm:p-1.5',
                   view === 'grid'
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
               >
-                <LayoutGrid className="size-4" />
+                <LayoutGrid className="size-4 shrink-0" />
               </button>
               <button
                 type="button"
                 aria-label="Vista em lista"
                 onClick={() => setView('list')}
                 className={cn(
-                  'rounded-full p-1.5 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2',
+                  'flex min-h-11 min-w-11 touch-manipulation items-center justify-center rounded-full p-2 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 sm:min-h-0 sm:min-w-0 sm:p-1.5',
                   view === 'list'
                     ? 'bg-primary text-primary-foreground'
                     : 'text-muted-foreground hover:text-foreground',
                 )}
               >
-                <List className="size-4" />
+                <List className="size-4 shrink-0" />
               </button>
             </div>
           </div>
@@ -416,7 +421,7 @@ export function Vault() {
           className={cn(
             'mt-6 gap-3 overflow-visible',
             view === 'grid'
-              ? 'grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3'
+              ? 'grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-3 xl:grid-cols-3'
               : 'flex flex-col',
           )}
         >

@@ -207,7 +207,7 @@ export function VaultPackageCard({
               <div
                 className={cn(
                   'absolute -top-2 flex -translate-y-1 justify-center gap-0.5 rounded-full border border-border bg-card/95 px-1 py-0.5 shadow-lg backdrop-blur-md transition-all duration-200',
-                  'opacity-0 group-hover:opacity-100',
+                  'opacity-100 sm:opacity-0 sm:group-hover:opacity-100',
                   moveMenuOpen && 'opacity-100',
                 )}
               >
@@ -215,7 +215,7 @@ export function VaultPackageCard({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="size-8 rounded-full text-muted-foreground hover:text-foreground"
+                  className="size-11 min-h-11 min-w-11 rounded-full text-muted-foreground hover:text-foreground sm:size-8 sm:min-h-8 sm:min-w-8"
                   title={isFav ? 'Remover dos favoritos' : 'Favoritar'}
                   onClick={handleFav}
                 >
@@ -229,7 +229,7 @@ export function VaultPackageCard({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="size-8 rounded-full text-muted-foreground hover:text-foreground"
+                  className="size-11 min-h-11 min-w-11 rounded-full text-muted-foreground hover:text-foreground sm:size-8 sm:min-h-8 sm:min-w-8"
                   title="Mover para pasta"
                   onClick={onToggleMoveMenu}
                 >
@@ -239,7 +239,7 @@ export function VaultPackageCard({
                   type="button"
                   variant="ghost"
                   size="icon"
-                  className="size-8 rounded-full text-muted-foreground hover:text-foreground"
+                  className="size-11 min-h-11 min-w-11 rounded-full text-muted-foreground hover:text-foreground sm:size-8 sm:min-h-8 sm:min-w-8"
                   title="Copiar JSON"
                   onClick={(e) => void handleCopy(e)}
                 >

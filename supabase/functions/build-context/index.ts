@@ -1,6 +1,6 @@
 // supabase/functions/build-context/index.ts
 // Recebe Intent + raw_input, monta o pacote de contexto canônico em JSON.
-// Modelo: gpt-4o (qualidade). Stream SSE → client acumula e parseia.
+// Modelo: gpt-4o (qualidade). Resposta não-streaming (JSON completo — mais fiável em produção).
 
 const CORS = {
   'Access-Control-Allow-Origin': '*',
@@ -81,7 +81,6 @@ Deno.serve(async (req) => {
     const intent    = body.intent;
     const rawInput: string  = body.raw_input;
     const attempt: number   = body.attempt ?? 0;
-    const stream: boolean   = body.stream === true;
 
     const apiKey = Deno.env.get('OPENAI_API_KEY');
     if (!apiKey) {
@@ -118,7 +117,7 @@ ${attemptNote}
         model:       'gpt-4o',
         temperature: attempt === 0 ? 0.7 : 0.3,  // mais conservador no refinamento
         max_tokens:  2048,
-        stream,
+        stream:      false,
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user',   content: userMessage },
@@ -135,16 +134,13 @@ ${attemptNote}
       );
     }
 
-    if (stream && aiRes.body) {
-      return new Response(aiRes.body, {
-        headers: { ...CORS, 'Content-Type': 'text/event-stream', 'Cache-Control': 'no-cache' },
-      });
-    }
-
-    // Non-stream fallback
     const data = await aiRes.json();
     const content = data.choices?.[0]?.message?.content ?? '';
-    const clean = content.replace(/^```json\s*/i, '').replace(/```\s*$/i, '').trim();
+    const clean = content
+      .replace(/^```json\s*/i, '')
+      .replace(/^```\s*/i, '')
+      .replace(/```\s*$/i, '')
+      .trim();
 
     return new Response(clean, {
       status: 200,

@@ -28,7 +28,18 @@ export function PlatformSelector({
   compact = false,
 }: PlatformSelectorProps) {
   return (
-    <div className={cn(compact ? 'flex flex-wrap items-center gap-1.5' : 'flex flex-wrap gap-2', className)}>
+    <div
+      className={cn(
+        compact
+          ? cn(
+              'flex items-center gap-2',
+              '-mx-1 px-1 max-sm:flex-nowrap max-sm:gap-2 max-sm:overflow-x-auto max-sm:pb-1 max-sm:[-ms-overflow-style:none] max-sm:[scrollbar-width:none] max-sm:[&::-webkit-scrollbar]:hidden',
+              'sm:flex-wrap',
+            )
+          : 'flex flex-wrap gap-2',
+        className,
+      )}
+    >
       {PLATFORMS.map((p) => {
         const active = value === p;
         return (
@@ -38,17 +49,17 @@ export function PlatformSelector({
             disabled={disabled}
             onClick={() => onChange(p)}
             className={cn(
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
-              'font-medium transition-colors',
+              'shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+              'font-medium transition-colors active:opacity-95',
               compact
                 ? cn(
-                    'rounded-full border px-2.5 py-1 text-xs',
+                    'min-h-11 rounded-full border px-3 py-2 text-xs sm:min-h-0 sm:px-2.5 sm:py-1',
                     active
                       ? 'border-transparent bg-primary text-primary-foreground'
                       : 'border-transparent bg-muted/80 text-muted-foreground hover:bg-muted hover:text-foreground',
                   )
                 : cn(
-                    'min-w-[7.25rem] rounded-md border px-3 py-2 text-left text-[13px] leading-tight',
+                    'min-h-11 min-w-[7.25rem] rounded-md border px-3 py-2 text-left text-[13px] leading-tight active:bg-accent md:min-h-0',
                     active
                       ? 'border-transparent bg-primary text-primary-foreground shadow-sm'
                       : 'border-border bg-secondary text-secondary-foreground hover:bg-accent hover:text-accent-foreground',

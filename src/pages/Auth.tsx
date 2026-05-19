@@ -148,7 +148,7 @@ export function Auth() {
   }
 
   return (
-    <div className="flex min-h-svh flex-col items-center justify-center bg-background px-4 py-12">
+    <div className="safe-x safe-bottom flex min-h-svh flex-col items-center justify-center bg-background px-4 py-12">
       <div className="w-full max-w-[400px]">
         <div className="flex flex-col items-center text-center">
           <BrandMark

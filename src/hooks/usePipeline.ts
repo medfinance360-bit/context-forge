@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react';
-import { useSSEStream } from './useSSEStream';
 import {
   IntentSchema,
   ContextPackageSchema,
@@ -52,8 +51,6 @@ async function getAuthHeader(): Promise<Record<string, string>> {
 }
 
 export function usePipeline() {
-  const { accumulateStream } = useSSEStream();
-
   const [state, setState] = useState<PipelineState>({
     phase:      'idle',
     events:     [],
@@ -95,7 +92,7 @@ export function usePipeline() {
       setState(s => ({ ...s, intent, phase: 'building_context' }));
       pushEvent({ type: 'intent_extracted', data: intent });
 
-      // ── Etapa 2: build-context (SSE acumulado) ────────────────────────────
+      // ── Etapa 2: build-context (resposta completa, sem SSE) ────────────────
       let contextPackage: ContextPackage | null = null;
       let lastValidation: Validation | null = null;
       let attempt = 0;
@@ -104,13 +101,15 @@ export function usePipeline() {
         setState(s => ({ ...s, attempt, phase: attempt === 0 ? 'building_context' : 'refining' }));
         if (attempt > 0) pushEvent({ type: 'refine_start', data: { attempt } });
 
-        const raw = await accumulateStream(
-          getEdgeFunctionUrl('build-context'),
-          { intent, raw_input: rawInput, attempt },
-          headers,
-        );
+        const res = await fetch(getEdgeFunctionUrl('build-context'), {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json', ...headers },
+          body:    JSON.stringify({ intent, raw_input: rawInput, attempt }),
+        });
+        if (!res.ok) throw new Error(`build-context: ${await res.text()}`);
 
-        const clean = raw
+        const text = await res.text();
+        const clean = text
           .replace(/^```json\s*/i, '')
           .replace(/^```\s*/i, '')
           .replace(/```\s*$/i, '')
@@ -180,7 +179,7 @@ export function usePipeline() {
       setState(s => ({ ...s, phase: 'error', error: message }));
       pushEvent({ type: 'pipeline_error', data: { message } });
     }
-  }, [accumulateStream, pushEvent]);
+  }, [pushEvent]);
 
   const reset = useCallback(() => {
     setState({

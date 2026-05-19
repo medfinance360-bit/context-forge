@@ -2,7 +2,7 @@ import {
   AlertCircle,
   CheckCircle2,
   ChevronDown,
-  ChevronUp,
+  ChevronRight,
   FileJson2,
   Sparkles,
   Wrench,
@@ -58,20 +58,27 @@ export function EventDrawer({ open, onToggle, items, className }: EventDrawerPro
   return (
     <div
       className={cn(
-        'flex shrink-0 flex-col border-t border-border/40 bg-background/95',
+        'flex shrink-0 flex-col border-t border-border/40 bg-background/95 backdrop-blur-xl',
         className,
       )}
     >
       <button
         type="button"
         onClick={onToggle}
-        className="flex w-full items-center justify-between gap-2 px-4 py-2 text-left text-[11px] text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground"
+        aria-expanded={open}
+        className="flex min-h-11 w-full touch-manipulation items-center justify-between gap-2 px-4 py-2 text-left text-[11px] text-muted-foreground transition-colors hover:bg-muted/40 hover:text-foreground active:bg-muted/50 sm:min-h-10"
       >
-        <span className="flex items-center gap-1.5 font-medium">
-          {open ? <ChevronDown className="size-3.5 opacity-70" /> : <ChevronUp className="size-3.5 opacity-70" />}
+        <span className="flex items-center gap-2 font-medium">
+          {open ? (
+            <ChevronDown className="size-4 shrink-0 opacity-70" aria-hidden />
+          ) : (
+            <ChevronRight className="size-4 shrink-0 opacity-70" aria-hidden />
+          )}
           Eventos do pipeline
         </span>
-        <span className="tab-nums font-mono text-[10px] text-muted-foreground/60">{items.length}</span>
+        <span className="tab-nums shrink-0 font-mono text-[10px] text-muted-foreground/60">
+          {items.length}
+        </span>
       </button>
 
       <AnimatePresence initial={false}>
