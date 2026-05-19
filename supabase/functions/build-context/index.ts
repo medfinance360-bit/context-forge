@@ -12,58 +12,69 @@ function buildSystem(taskType: string, strategy: string): string {
 Você é um engenheiro de contexto especialista. Sua tarefa é montar um pacote de contexto canônico em JSON estrito.
 Tarefa classificada como: ${taskType} | Estratégia: ${strategy}
 
-RETRIEVAL — Extração ativa de contexto (OBRIGATÓRIO):
-Analise o input do usuário e preencha ativamente:
-- retrieval.docs: Extraia estruturas listadas no input (trilhas, opções, requisitos técnicos, especificações, frameworks mencionados). Se o texto citar "Trilha 1: X", "Opção A: Y", requisitos específicos ou referências técnicas, adicione cada item como string descritiva em docs. Não deixe vazio se houver qualquer estrutura no input.
-- retrieval.exemplars: Se o task_type for EXTRACTION ou CODE, crie 1-2 exemplos few-shot sintéticos e concretos que ilustrem o padrão de entrada/saída esperado. Para outros tipos, deixe vazio.
+REGRA FUNDAMENTAL — PROIBIDO SLOT-FILLING:
+NÃO substitua placeholders com frases genéricas. Cada campo deve conter conteúdo SINTETIZADO e ESPECÍFICO ao input real.
+Exemplos do que NÃO fazer:
+- system_immutable: "Você é um especialista em ${taskType}..." → ERRADO, genérico
+- user_data.content: copiar o input verbatim → ERRADO, não sintetiza
+- steps: ["Analisar o problema", "Implementar solução"] → ERRADO, sem especificidade
+O teste: se o campo faria sentido para QUALQUER outro input, está errado.
 
-CONTRATO — Campos críticos para evitar alucinação:
-- contract.steps: passos ESPECÍFICOS do desafio real, não passos genéricos de processo
-- contract.acceptance_criteria: critérios verificáveis objetivamente
-- contract.stop_condition: condição clara e mensurável de encerramento
-- contract.fallback: ação concreta a tomar se o objetivo principal não for atingível
-- contract.self_check: perguntas que o modelo deve responder antes de entregar o output
+USER_DATA — Síntese estruturada (NÃO copie o input):
+- user_data.content deve conter APENAS os dados concretos e factuais extraídos do input (nomes, valores, URLs, requisitos específicos, restrições reais). Reescreva de forma limpa e estruturada. Máximo 3-4 linhas.
+
+SYSTEM_IMMUTABLE — Instruções de domínio específico:
+- Escreva instruções que só fariam sentido para ESTE domínio e ESTE objetivo específico.
+- Inclua restrições do domínio real, tom adequado ao público-alvo, e o que o modelo NUNCA deve fazer neste contexto.
+
+RETRIEVAL — Extração ativa de contexto (OBRIGATÓRIO):
+- retrieval.docs: Extraia estruturas concretas do input (trilhas, opções, requisitos, specs, frameworks). Cada item deve ser uma string descritiva e específica. Nunca deixe vazio se houver estrutura no input.
+- retrieval.exemplars: Para EXTRACTION ou CODE, crie 1-2 exemplos few-shot concretos com input/output reais do domínio. Para outros tipos, array vazio.
+
+CONTRATO — Anti-alucinação:
+- contract.steps: passos com verbos de ação específicos ao domínio real (não "analisar o problema" mas "verificar se o ID do produto começa com letra minúscula e tem ≤40 caracteres")
+- contract.acceptance_criteria: critérios com condições binárias verificáveis ("A assinatura aparece como ativa no Play Console", não "a assinatura está configurada")
+- contract.stop_condition: condição mensurável e específica
+- contract.fallback: ação concreta e específica ao domínio
+- contract.self_check: perguntas que expõem falhas do domínio real
 
 Retorne SOMENTE o JSON abaixo, sem markdown, sem backticks, sem texto extra.
 O primeiro caractere deve ser { e o último deve ser }:
 {
-  "system_immutable": "string — instruções permanentes incorporando a estratégia ${taskType}, específicas ao domínio",
+  "system_immutable": "string — instruções de domínio específicas que só fazem sentido para ESTE objetivo e ESTE público",
   "task_routing": {
     "type": "${taskType}",
-    "strategy": "string — nome das técnicas aplicadas"
+    "strategy": "string — técnicas específicas aplicadas a este caso"
   },
-  "assumptions": ["array de strings — premissas explicitadas, específicas ao input"],
+  "assumptions": ["premissa específica 1 extraída do input real", "premissa específica 2"],
   "intent": {
-    "role": "string",
-    "objective": "string — objetivo do PRODUTO/DESAFIO (não tarefas administrativas)",
-    "public": "string",
-    "constraints": ["array"]
+    "role": "string — persona específica ao domínio",
+    "objective": "string — objetivo do PRODUTO/DESAFIO com métricas ou critérios reais",
+    "public": "string — público-alvo com nível de conhecimento e contexto",
+    "constraints": ["restrição concreta 1", "restrição concreta 2"]
   },
   "user_data": {
     "delimiter": "<<<USER_DATA>>>",
-    "content": "string — dados concretos do usuário isolados das instruções"
+    "content": "string — síntese limpa dos dados concretos do usuário: fatos, valores, nomes, requisitos. NÃO copie o input verbatim. Máximo 4 linhas."
   },
   "retrieval": {
-    "exemplars": ["array de strings — exemplos few-shot se relevante ao task_type, senão vazio"],
-    "docs": ["array de strings — contexto extraído do input: trilhas, opções, specs técnicas, frameworks"]
+    "exemplars": ["exemplo few-shot concreto se EXTRACTION/CODE, senão array vazio"],
+    "docs": ["item concreto extraído do input 1", "item concreto extraído do input 2"]
   },
   "contract": {
-    "role": "string",
-    "objective": "string — objetivo específico e mensurável",
-    "inputs": {"campo": "descrição do tipo e formato esperado"},
-    "assumptions": ["array — premissas específicas do contrato"],
-    "steps": ["array de strings — passos concretos e ordenados do desafio real"],
-    "tools": ["array — ferramentas/APIs específicas se AGENT, senão vazio"],
-    "output_format": "string — formato exato e detalhado esperado",
-    "acceptance_criteria": ["array — critérios verificáveis objetivamente"],
-    "stop_condition": "string — condição clara e mensurável de parada",
-    "fallback": "string — ação concreta se objetivo principal não for atingível",
-    "self_check": ["array — perguntas que o modelo responde antes de entregar"]
+    "role": "string — papel específico ao domínio",
+    "objective": "string — objetivo com critério de sucesso mensurável",
+    "inputs": {"campo_real": "tipo e formato esperado com exemplo concreto"},
+    "assumptions": ["premissa do contrato específica ao domínio"],
+    "steps": ["verbo + ação específica do domínio real 1", "verbo + ação específica 2"],
+    "tools": ["ferramenta específica se AGENT, senão array vazio"],
+    "output_format": "string — formato exato com estrutura detalhada e exemplo de campos",
+    "acceptance_criteria": ["condição binária verificável 1", "condição binária verificável 2"],
+    "stop_condition": "string — condição mensurável e específica com critério claro",
+    "fallback": "string — ação concreta e específica ao domínio se objetivo principal falhar",
+    "self_check": ["pergunta que expõe falha específica do domínio 1", "pergunta 2"]
   }
 }
-
-Seja específico e concreto. Não use placeholders genéricos como "descrição aqui" ou "exemplo".
-Adapte TUDO ao input e intent fornecidos.
 `.trim();
 }
 
