@@ -33,7 +33,7 @@ export interface PipelineState {
   error:      string | null;
 }
 
-const MAX_ATTEMPTS = 2;
+const MAX_ATTEMPTS = 0;
 
 function getEdgeFunctionUrl(name: string): string {
   const url = import.meta.env.VITE_SUPABASE_URL as string;

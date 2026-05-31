@@ -96,7 +96,7 @@ async function callOpenAI(apiKey: string, system: string, userMsg: string, tempe
     },
     body: JSON.stringify({
       model: 'gpt-4o',
-      max_tokens: 8192,
+      max_tokens: 16000,
       temperature,
       messages: [
         { role: 'system', content: system },
@@ -144,12 +144,10 @@ Deno.serve(async (req) => {
     const systemPrompt = buildSystem(taskType, strategy);
 
     const attemptNote = attempt > 0
-      ? `\n\n[REFINAMENTO ${attempt}] Corrija os problemas específicos abaixo (em ordem de prioridade):
-${previousGaps.length > 0
-  ? previousGaps.map((g, i) => `${i + 1}. ${g}`).join('\n')
-  : '1. Aumente a especificidade de todos os campos\n2. Expanda retrieval.docs com mais itens do input\n3. Torne steps mais concretos e verificáveis'}
+      ? `\n\n[REFINAMENTO ${attempt}] Corrija APENAS os problemas abaixo. Mantenha todos os outros campos exatamente iguais à tentativa anterior. Não adicione conteúdo novo onde já estava adequado.
+${(previousGaps.length > 0 ? previousGaps.slice(0, 3) : ['Aumente especificidade dos steps', 'Expanda retrieval.docs', 'Torne acceptance_criteria verificáveis']).map((g, i) => `${i + 1}. ${g}`).join('\n')}
 
-REGRA CRÍTICA: o pacote refinado deve conter NO MÍNIMO a mesma quantidade de informação da tentativa anterior. Nunca remova itens de retrieval.docs ou steps.`
+LIMITE DE CONCISÃO: cada string do JSON deve ter no máximo 300 caracteres. Arrays com no máximo 8 itens.`
       : '';
 
     const userMessage = `
