@@ -103,6 +103,7 @@ async function callOpenAI(apiKey: string, system: string, userMsg: string, tempe
         { role: 'user', content: userMsg },
       ],
     }),
+    signal: AbortSignal.timeout(120_000),
   });
   if (!res.ok) {
     const err = await res.text();

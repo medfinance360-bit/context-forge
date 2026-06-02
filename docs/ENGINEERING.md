@@ -85,9 +85,11 @@ Headers: `Authorization: Bearer <access_token>` + `apikey: <anon>`.
 
 ### Refinamento
 
-Até **`MAX_ATTEMPTS = 2`** iterações. A cada ciclo:
+Até **`MAX_ATTEMPTS = 2`** iterações (constante em `usePipeline.ts`). A cada ciclo:
 - `gap_score >= 0.9` → aceita e encerra
 - `gap_score < 0.9` e tentativas restantes → `attempt++`, envia `previous_gaps` para `build-context`, refaz
+
+`build-context` usa `AbortSignal.timeout(120_000)` na chamada OpenAI para evitar que a Edge Function pendurada seja abortada pelo Supabase sem retornar resposta.
 
 ### Diagrama de fluxo
 

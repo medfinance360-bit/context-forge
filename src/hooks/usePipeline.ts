@@ -33,7 +33,7 @@ export interface PipelineState {
   error:      string | null;
 }
 
-const MAX_ATTEMPTS = 0;
+const MAX_ATTEMPTS = 2;
 
 function getEdgeFunctionUrl(name: string): string {
   const url = import.meta.env.VITE_SUPABASE_URL as string;
@@ -124,11 +124,15 @@ export function usePipeline() {
 
         let parsed: ContextPackage;
         try {
-          parsed = ContextPackageSchema.parse(JSON.parse(clean));
-        } catch {
-          console.error('build-context raw response:', clean.slice(0, 500));
+          const rawJson = JSON.parse(clean);
+          parsed = ContextPackageSchema.parse(rawJson);
+        } catch (parseErr) {
+          const isJsonSyntax = parseErr instanceof SyntaxError;
+          const label = isJsonSyntax ? 'JSON malformado' : 'schema inválido';
+          console.error(`build-context ${label} (tentativa ${attempt}):`, clean.slice(0, 500));
+          if (!isJsonSyntax) console.error('Zod error:', parseErr);
           throw new Error(
-            `build-context retornou JSON inválido na tentativa ${attempt}: ${clean.slice(0, 100)}`,
+            `build-context retornou ${label} na tentativa ${attempt}: ${clean.slice(0, 120)}`,
           );
         }
 
