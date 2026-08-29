@@ -18,7 +18,7 @@ type Lang = 'pt' | 'en';
 
 const COPY = {
   pt: {
-    tagline: 'Cofre técnico de prompts com engenharia de contexto.',
+    tagline: 'Crie e organize seus melhores prompts com IA.',
     welcomeBack: 'Bem-vindo de volta',
     createAccount: 'Crie sua conta',
     emailPh: 'Email',
@@ -39,7 +39,7 @@ const COPY = {
     backHome: 'Voltar ao início',
   },
   en: {
-    tagline: 'Technical prompt vault with context engineering.',
+    tagline: 'Create and organize your best prompts with AI.',
     welcomeBack: 'Welcome back',
     createAccount: 'Create your account',
     emailPh: 'Email',
