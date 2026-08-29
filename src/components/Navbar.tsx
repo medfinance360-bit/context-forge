@@ -108,7 +108,7 @@ export function Navbar() {
           >
             <div className="flex rounded-full border border-border bg-muted p-0.5 shadow-sm">
               <NavLink to="/forge" className={pillClass}>
-                Forja
+                Gerar
               </NavLink>
               <NavLink to="/vault" className={pillClass}>
                 Cofre
@@ -125,7 +125,7 @@ export function Navbar() {
             >
               <Link to="/forge">
                 <Plus className="size-4" strokeWidth={2.5} />
-                Nova forja
+                Novo Prompt
               </Link>
             </Button>
             <Button
@@ -178,7 +178,7 @@ export function Navbar() {
                 className={drawerNavClass}
                 onClick={() => setMobileOpen(false)}
               >
-                Forja
+                Gerar
               </NavLink>
               <NavLink
                 to="/vault"
@@ -196,7 +196,7 @@ export function Navbar() {
                 onClick={() => setMobileOpen(false)}
               >
                 <Plus className="size-4 shrink-0" strokeWidth={2.5} />
-                Nova forja
+                Novo Prompt
               </Link>
               <button
                 type="button"

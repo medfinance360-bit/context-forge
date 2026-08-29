@@ -4,7 +4,7 @@ import { Button } from '../components/ui/button';
 
 export function Landing() {
   return (
-    <div className="safe-x safe-bottom flex min-h-svh flex-col items-center justify-center bg-background px-4 py-12 sm:py-16">
+    <div className="flex min-h-svh flex-col items-center justify-center bg-background px-4 py-12 sm:py-16">
       <div className="w-full max-w-lg text-center">
         <div className="flex justify-center">
           <BrandMark
@@ -14,13 +14,12 @@ export function Landing() {
           />
         </div>
         <p className="mx-auto mt-4 max-w-md text-sm leading-relaxed text-muted-foreground">
-          Cofre técnico de prompts: cada item é um{' '}
-          <strong className="font-medium text-foreground/90">pacote de contexto</strong> forjado com
-          intent, contrato, validação e roteamento por plataforma — engenharia de contexto, não só
-          texto copiado.
+          Crie, organize e reutilize seus melhores prompts.{' '}
+          <strong className="font-medium text-foreground/90">PromptMaker AI</strong> gera prompts
+          profissionais sob demanda — salve no cofre com pastas, tags e favoritos.
         </p>
         <Button size="lg" className="mt-10 rounded-full px-8" asChild>
-          <Link to="/auth">Entrar</Link>
+          <Link to="/auth">Começar</Link>
         </Button>
       </div>
     </div>
