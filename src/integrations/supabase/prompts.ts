@@ -30,9 +30,10 @@ export async function fetchAllPrompts(): Promise<Prompt[]> {
 }
 
 export async function insertPrompt(payload: InsertPrompt): Promise<Prompt> {
+  const { data: { user } } = await supabase.auth.getUser();
   const { data, error } = await supabase
     .from('prompts')
-    .insert(payload)
+    .insert({ ...payload, user_id: user?.id })
     .select()
     .single();
   if (error) throw error;

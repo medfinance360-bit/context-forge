@@ -11,9 +11,10 @@ export async function fetchFolders(): Promise<Folder[]> {
 }
 
 export async function insertFolder(name: string): Promise<Folder> {
+  const { data: { user } } = await supabase.auth.getUser();
   const { data, error } = await supabase
     .from('folders')
-    .insert({ name })
+    .insert({ name, user_id: user?.id })
     .select()
     .single();
   if (error) throw error;
