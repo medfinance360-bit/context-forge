@@ -9,20 +9,31 @@ import { useInsertPrompt } from '../hooks/usePrompts';
 import type { PromptColor } from '../lib/types';
 import { cn } from '../lib/utils';
 
-function extractDelivery(content: string): string {
-  const match = content.match(/##\s+Entrega final\s*\n([\s\S]*?)(?:\n##|$)/i);
-  return match ? match[1].trim() : content;
+function extractPromptBody(content: string): string {
+  const idx = content.search(/\bSelf-check:\s*```json/i);
+  return idx > 0 ? content.slice(0, idx).trim() : content.trim();
+}
+
+function extractAudit(content: string): { score: number; status: string } | null {
+  const match = content.match(/AUDIT REPORT:\s*```json\s*([\s\S]*?)```/i);
+  if (!match) return null;
+  try {
+    const d = JSON.parse(match[1]);
+    if (typeof d.score === 'number' && typeof d.status === 'string') return { score: d.score, status: d.status };
+    return null;
+  } catch { return null; }
 }
 
 function parseResult(content: string) {
+  const body = extractPromptBody(content);
   const sections: { title: string; body: string }[] = [];
   const regex = /##\s+(.+?)\n([\s\S]*?)(?=\n##\s|\s*$)/g;
   let m: RegExpExecArray | null;
-  while ((m = regex.exec(content)) !== null) {
-    const body = m[2].trim();
-    if (body) sections.push({ title: m[1].trim(), body });
+  while ((m = regex.exec(body)) !== null) {
+    const s = m[2].trim();
+    if (s) sections.push({ title: m[1].trim(), body: s });
   }
-  return sections.length > 0 ? sections : [{ title: 'Resultado', body: content }];
+  return sections.length > 0 ? sections : [{ title: 'Resultado', body }];
 }
 
 export function Forge() {
@@ -44,8 +55,8 @@ export function Forge() {
   async function handleCopy() {
     if (!state.content) return;
     try {
-      await navigator.clipboard.writeText(extractDelivery(state.content));
-      toast.success('Entrega copiada.');
+      await navigator.clipboard.writeText(extractPromptBody(state.content));
+      toast.success('Prompt copiado.');
     } catch { toast.error('Não foi possível copiar.'); }
   }
 
@@ -61,6 +72,7 @@ export function Forge() {
   }
 
   const sections = isDone ? parseResult(state.content) : [];
+  const audit = isDone ? extractAudit(state.content) : null;
 
   return (
     <div className="mx-auto flex min-h-0 w-full max-w-5xl flex-1 flex-col px-4 py-6 sm:px-6">
@@ -117,6 +129,17 @@ export function Forge() {
         {/* Result panel */}
         {isDone && (
           <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto pb-6">
+            {audit && (
+              <div className="flex items-center gap-2">
+                <span className={cn(
+                  'rounded-full px-2.5 py-0.5 text-[11px] font-semibold',
+                  audit.status === 'APPROVED' ? 'bg-success/15 text-success-foreground' :
+                  audit.status === 'APPROVED_WITH_CONDITIONS' ? 'bg-warning/15 text-warning-foreground' :
+                  'bg-destructive/15 text-destructive',
+                )}>{audit.status.replace(/_/g, ' ')}</span>
+                <span className="text-[11px] text-muted-foreground">Score {audit.score.toFixed(1)} / 10.0</span>
+              </div>
+            )}
             {sections.map((s, i) => (
               <div key={i} className="flex flex-col gap-1.5">
                 <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-muted-foreground">{s.title}</p>
@@ -131,7 +154,7 @@ export function Forge() {
 
       {showSave && (
         <SavePromptDialog
-          initialContent={extractDelivery(state.content)}
+          initialContent={extractPromptBody(state.content)}
           initialTitle={input.slice(0, 60)}
           onSave={data => void handleSave(data)}
           onClose={() => setShowSave(false)}
